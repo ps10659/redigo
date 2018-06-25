@@ -27,14 +27,10 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/17media/api/base/metrics"
 )
 
 var (
 	_ ConnWithTimeout = (*conn)(nil)
-
-	met = metrics.New("redis-internal")
 )
 
 // conn is the low-level implementation of Conn
@@ -191,7 +187,7 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 	}
 	netDial.End()
 
-	tls := met.BumpTime("dial.time", "block", "tls")
+	useTLS := met.BumpTime("dial.time", "block", "useTLS")
 	if do.useTLS {
 		var tlsConfig *tls.Config
 		if do.tlsConfig == nil {
@@ -215,7 +211,7 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 		}
 		netConn = tlsConn
 	}
-	tls.End()
+	useTLS.End()
 
 	getConn := met.BumpTime("dial.time", "block", "getConn")
 	c := &conn{
