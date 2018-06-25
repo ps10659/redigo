@@ -341,6 +341,7 @@ func (p *Pool) get(ctx interface {
 	dial := met.BumpTime("get.time", "block", "dial")
 	c, err := p.Dial()
 	if err != nil {
+		met.BumpSum("dial.error", 1, "reason", err.Error())
 		c = nil
 		p.mu.Lock()
 		p.active--

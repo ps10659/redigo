@@ -27,10 +27,14 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/17media/api/base/metrics"
 )
 
 var (
 	_ ConnWithTimeout = (*conn)(nil)
+
+	met = metrics.New("redis-internal")
 )
 
 // conn is the low-level implementation of Conn
@@ -180,11 +184,14 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 		do.dial = do.dialer.Dial
 	}
 
+	netDial := met.BumpTime("dial.time", "block", "netDial")
 	netConn, err := do.dial(network, address)
 	if err != nil {
 		return nil, err
 	}
+	netDial.End()
 
+	tls := met.BumpTime("dial.time", "block", "tls")
 	if do.useTLS {
 		var tlsConfig *tls.Config
 		if do.tlsConfig == nil {
@@ -208,7 +215,9 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 		}
 		netConn = tlsConn
 	}
+	tls.End()
 
+	getConn := met.BumpTime("dial.time", "block", "getConn")
 	c := &conn{
 		conn:         netConn,
 		bw:           bufio.NewWriter(netConn),
@@ -216,20 +225,25 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 		readTimeout:  do.readTimeout,
 		writeTimeout: do.writeTimeout,
 	}
+	getConn.End()
 
+	auth := met.BumpTime("dial.time", "block", "auth")
 	if do.password != "" {
 		if _, err := c.Do("AUTH", do.password); err != nil {
 			netConn.Close()
 			return nil, err
 		}
 	}
+	auth.End()
 
+	selectDB := met.BumpTime("dial.time", "block", "selectDB")
 	if do.db != 0 {
 		if _, err := c.Do("SELECT", do.db); err != nil {
 			netConn.Close()
 			return nil, err
 		}
 	}
+	selectDB.End()
 
 	return c, nil
 }
