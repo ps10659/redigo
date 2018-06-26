@@ -180,14 +180,14 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 		do.dial = do.dialer.Dial
 	}
 
-	netDial := met.BumpTime("dial.time", "block", "netDial")
+	// netDial := met.BumpTime("dial.time", "block", "netDial")
 	netConn, err := do.dial(network, address)
 	if err != nil {
 		return nil, err
 	}
-	netDial.End()
+	// netDial.End()
 
-	useTLS := met.BumpTime("dial.time", "block", "useTLS")
+	// useTLS := met.BumpTime("dial.time", "block", "useTLS")
 	if do.useTLS {
 		var tlsConfig *tls.Config
 		if do.tlsConfig == nil {
@@ -211,9 +211,9 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 		}
 		netConn = tlsConn
 	}
-	useTLS.End()
+	// useTLS.End()
 
-	getConn := met.BumpTime("dial.time", "block", "getConn")
+	// getConn := met.BumpTime("dial.time", "block", "getConn")
 	c := &conn{
 		conn:         netConn,
 		bw:           bufio.NewWriter(netConn),
@@ -221,25 +221,25 @@ func Dial(network, address string, options ...DialOption) (Conn, error) {
 		readTimeout:  do.readTimeout,
 		writeTimeout: do.writeTimeout,
 	}
-	getConn.End()
+	// getConn.End()
 
-	auth := met.BumpTime("dial.time", "block", "auth")
+	// auth := met.BumpTime("dial.time", "block", "auth")
 	if do.password != "" {
 		if _, err := c.Do("AUTH", do.password); err != nil {
 			netConn.Close()
 			return nil, err
 		}
 	}
-	auth.End()
+	// auth.End()
 
-	selectDB := met.BumpTime("dial.time", "block", "selectDB")
+	// selectDB := met.BumpTime("dial.time", "block", "selectDB")
 	if do.db != 0 {
 		if _, err := c.Do("SELECT", do.db); err != nil {
 			netConn.Close()
 			return nil, err
 		}
 	}
-	selectDB.End()
+	// selectDB.End()
 
 	return c, nil
 }
