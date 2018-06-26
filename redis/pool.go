@@ -292,7 +292,7 @@ func (p *Pool) get(ctx interface {
 
 	p.mu.Lock()
 
-	// pruneStale := met.BumpTime("get.time", "block", "prune_stale")
+	pruneStale := met.BumpTime("get.time", "block", "prune_stale")
 	// Prune stale connections at the back of the idle list.
 	if p.IdleTimeout > 0 {
 		n := p.idle.count
@@ -305,9 +305,9 @@ func (p *Pool) get(ctx interface {
 			p.active--
 		}
 	}
-	// pruneStale.End()
+	pruneStale.End()
 
-	// getIdle := met.BumpTime("get.time","block", "get_idle")
+	getIdle := met.BumpTime("get.time", "block", "get_idle")
 	// Get idle connection from the front of idle list.
 	for p.idle.front != nil {
 		pc := p.idle.front
@@ -333,7 +333,7 @@ func (p *Pool) get(ctx interface {
 		p.mu.Unlock()
 		return nil, ErrPoolExhausted
 	}
-	// getIdle.End()
+	getIdle.End()
 
 	p.active++
 	p.mu.Unlock()
