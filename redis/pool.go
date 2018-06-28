@@ -290,9 +290,9 @@ func (p *Pool) get(ctx interface {
 	}
 	// wait.End()
 
+	pruneStale := met.BumpTime("get.time", "block", "prune_stale")
 	p.mu.Lock()
 
-	pruneStale := met.BumpTime("get.time", "block", "prune_stale")
 	// Prune stale connections at the back of the idle list.
 	if p.IdleTimeout > 0 {
 		n := p.idle.count
