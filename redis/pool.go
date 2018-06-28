@@ -274,7 +274,7 @@ func (p *Pool) get(ctx interface {
 	Err() error
 }) (*poolConn, error) {
 
-	wait := met.BumpTime("get.time", "block", "wait")
+	// wait := met.BumpTime("get.time", "block", "wait")
 	// Handle limit for p.Wait == true.
 	if p.Wait && p.MaxActive > 0 {
 		p.lazyInit()
@@ -288,11 +288,11 @@ func (p *Pool) get(ctx interface {
 			}
 		}
 	}
-	wait.End()
+	// wait.End()
 
 	p.mu.Lock()
 
-	// pruneStale := met.BumpTime("get.time", "block", "prune_stale")
+	pruneStale := met.BumpTime("get.time", "block", "prune_stale")
 	// Prune stale connections at the back of the idle list.
 	if p.IdleTimeout > 0 {
 		n := p.idle.count
@@ -305,9 +305,9 @@ func (p *Pool) get(ctx interface {
 			p.active--
 		}
 	}
-	// pruneStale.End()
+	pruneStale.End()
 
-	// getIdle := met.BumpTime("get.time", "block", "get_idle")
+	getIdle := met.BumpTime("get.time", "block", "get_idle")
 	// Get idle connection from the front of idle list.
 	for p.idle.front != nil {
 		pc := p.idle.front
@@ -333,12 +333,12 @@ func (p *Pool) get(ctx interface {
 		p.mu.Unlock()
 		return nil, ErrPoolExhausted
 	}
-	// getIdle.End()
+	getIdle.End()
 
 	p.active++
 	p.mu.Unlock()
 
-	dial := met.BumpTime("get.time", "block", "dial")
+	// dial := met.BumpTime("get.time", "block", "dial")
 	c, err := p.Dial()
 	if err != nil {
 		// met.BumpSum("dial.error", 1, "reason", err.Error())
@@ -350,7 +350,7 @@ func (p *Pool) get(ctx interface {
 		}
 		p.mu.Unlock()
 	}
-	dial.End()
+	// dial.End()
 
 	return &poolConn{c: c, created: nowFunc()}, err
 }
