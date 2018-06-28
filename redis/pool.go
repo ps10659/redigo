@@ -333,7 +333,7 @@ func (p *Pool) get(ctx interface {
 		p.mu.Unlock()
 		return nil, ErrPoolExhausted
 	}
-	getIdle.End()
+	// getIdle.End()
 
 	p.active++
 	// p.mu.Unlock()
