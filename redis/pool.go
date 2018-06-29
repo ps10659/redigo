@@ -336,7 +336,7 @@ func (p *Pool) get(ctx interface {
 	// getIdle.End()
 
 	p.active++
-	// p.mu.Unlock()
+	p.mu.Unlock()
 
 	// dial := met.BumpTime("get.time", "block", "dial")
 	c, err := p.Dial()
